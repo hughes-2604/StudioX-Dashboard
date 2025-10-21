@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio//X | Digital Programs Dashboard</title>
+    <!-- Load Tailwind CSS CDN for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import (Inter is highly professional and legible) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            /* Using a clean system font stack with Inter as the primary */
+            --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --primary-blue: #007aff; /* Clean, Apple-like Blue */
+        }
+
+        body {
+            font-family: var(--font-inter);
+            /* Dark mode theme: Deeper, less harsh background */
+            background-color: #0c0c0c; 
+            color: #f0f0f0; /* Lighter white for high contrast */
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6; /* Improved readability */
+        }
+
+        /* NEW: Glassmorphism/Card Base Style */
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.05); /* Very light, slightly transparent background */
+            backdrop-filter: blur(12px); /* Frosted Glass */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem; /* Highly rounded corners for a modern feel */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Subtle depth */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Input and Select styling consistency - CLEANER, less boxy */
+        /* Ensuring 100% width and consistent padding */
+        .app-input, .app-select {
+            width: 100%; 
+            padding: 1rem; /* 16px Padding: This is the reference point for alignment */
+            background-color: rgba(255, 255, 255, 0.08); /* Transparent input background */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0;
+            border-radius: 0.75rem;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .app-input:focus, .app-select:focus {
+            border-color: #3b82f6; /* Tailwind blue-500 */
+            background-color: rgba(59, 130, 246, 0.1); /* Light blue focus glow */
+            outline: none;
+        }
+
+        .cta-button {
+            padding: 1rem 2rem;
+            min-height: 48px; /* Touch target minimum */
+            font-weight: 600;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .file-input-label:hover {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Custom scroll indicator styling for a subtle effect */
+        .progress-bar {
+            height: 3px;
+            background-color: #3b82f6; /* Blue */
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+        .mode-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        /* Active tab styling refined for Apple look */
+        .mode-tab.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: #fff; 
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
+        }
+        .mode-tab:not(.active) {
+            background-color: rgba(255, 255, 255, 0.08); 
+            color: #ccc; 
+        }
+        .mode-tab:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.15); 
+            color: #fff;
+        }
+
+        /* Styles for the output box wrapper and content */
+        .text-output-box {
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 0.75rem;
+        }
+        .text-output-content {
+            /* These properties are crucial for cryptographic output display */
+            word-break: break-all;
+            white-space: pre-wrap; 
+        }
+        
+        /* Custom Range Slider Track and Thumb for Dark Theme */
+        input[type=range]::-webkit-slider-runnable-track {
+            background: #374151; /* Dark Gray Track */
+            height: 6px;
+            border-radius: 3px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6; /* Blue Thumb */
+            margin-top: -5px; 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+        }
+        /* Firefox */
+        input[type=range]::-moz-range-track {
+            background: #374151;
+            height: 6px;
+            border-radius: 3px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        /* Ensure checkbox styling looks good (Tailwind uses form-checkbox utility) */
+        .form-checkbox {
+            border-color: #4b5563; /* gray-600 */
+        }
+    </style>
+</head>
+<body onscroll="updateProgressBar()">
+    <!-- Page Scroll Progress Indicator (Subtle 3px bar) -->
+    <div id="progressBar" class="progress-bar"></div>
+
+    <!-- Header & Navigation (Frosted Glass Effect) -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/5 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <!-- Logo/Brand -->
+            <a href="#" class="text-2xl font-bold text-blue-500">
+                Studio<span class="text-white">//X</span>
+            </a>
+            
+            <!-- Mobile Menu Button (Hidden on Desktop) -->
+            <button id="menu-button" class="md:hidden text-white hover:text-blue-500 focus:outline-none p-2 rounded-lg transition duration-150">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-8 text-gray-300">
+                <a href="#file-securer" class="hover:text-blue-500 transition-colors font-medium">File Securer</a>
+                <a href="#text-securer" class="hover:text-blue-500 transition-colors font-medium">Text Vault</a>
+                <a href="#password-generator" class="hover:text-blue-500 transition-colors font-medium">Password Generator</a>
+                <a href="#about" class="hover:text-blue-500 transition-colors font-medium">About</a>
+                <a href="#contact" class="hover:text-blue-500 transition-colors font-medium">Contact</a>
+            </nav>
+        </div>
+        
+        <!-- Mobile Navigation Drawer -->
+        <nav id="mobile-menu" class="hidden md:hidden bg-gray-900 border-t border-white/10">
+            <a href="#file-securer" class="block px-4 py-3 text-sm hover:bg-gray-800 transition-colors">File Securer</a>
+            <a href="#text-securer" class="block px-4 py-3 text-sm hover:bg-gray-800 transition-colors">Text Vault</a>
+            <a href="#password-generator" class="block px-4 py-3 text-sm hover:bg-gray-800 transition-colors">Password Generator</a>
+            <a href="#about" class="block px-4 py-3 text-sm hover:bg-gray-800 transition-colors">About</a>
+            <a href="#contact" class="block px-4 py-3 text-sm hover:bg-gray-800 transition-colors">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- 1. Hero Section (High Impact, Centralized) -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28 text-center">
+            <h1 class="text-5xl sm:text-7xl font-extrabold leading-tight tracking-tight text-white mb-6">
+                Your <span class="text-blue-500">Digital Dashboard</span>. Instant Access.
+            </h1>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-10">
+                A highly optimized, client-side platform for custom tools, data security, and specialized programs built for productivity.
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="#password-generator" class="cta-button bg-blue-500 hover:bg-blue-600 text-white shadow-xl shadow-blue-500/30 transform hover:scale-[1.03]">
+                    Generate Password
+                </a>
+                <a href="#file-securer" class="cta-button bg-white/10 hover:bg-white/20 text-white border border-white/20 transform hover:scale-[1.03]">
+                    View File Securer Demo
+                </a>
+            </div>
+        </section>
+
+        <!-- 2. File Securer Section (Encryption/Decryption) -->
+        <section id="file-securer" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <h2 class="text-4xl font-bold text-center text-white mb-4">Unbreakable Client-Side File Securer</h2>
+            <p class="text-lg text-gray-400 text-center max-w-xl mx-auto mb-10">
+                AES-256 GCM encryption. Your security relies on your high-entropy password.
+            </p>
+
+            <!-- Applied Glass Card Style -->
+            <div class="max-w-4xl mx-auto glass-card p-8 sm:p-12 space-y-6">
+                
+                <!-- Tab/Mode Switch -->
+                <div class="flex justify-center space-x-4 mb-8">
+                    <div id="fileEncryptTab" class="mode-tab active" onclick="switchFileMode('encrypt')">
+                        <span class="inline-flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Encrypt File
+                        </span>
+                    </div>
+                    <div id="fileDecryptTab" class="mode-tab" onclick="switchFileMode('decrypt')">
+                        <span class="inline-flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0v4m-8 0h8m-8 0H6a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2h-2z"></path></svg>
+                            Decrypt File
+                        </span>
+                    </div>
+                </div>
+
+                <!-- File Input -->
+                <label for="fileInput" class="flex flex-col text-gray-400">
+                    <span id="fileInputLabelText" class="mb-1 text-sm font-medium">Upload File to Encrypt:</span>
+                    <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)" />
+                    <label for="fileInput" id="fileInputDisplay" class="file-input-label">
+                         <svg class="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                         <span class="text-white font-medium">Click to choose a file</span>
+                    </label>
+                </label>
+
+                <!-- Password Input -->
+                <label for="filePasswordInput" class="flex flex-col text-gray-400">
+                    <span class="mb-1 text-sm font-medium">Set/Enter High-Entropy Password:</span>
+                    <input type="password" id="filePasswordInput" class="app-input" placeholder="Use a complex phrase (minimum 12 characters)">
+                </label>
+                
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <button id="fileActionButton" onclick="executeFileAction()" class="cta-button bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center">
+                        Encrypt File
+                    </button>
+                    
+                    <button id="fileClearButton" onclick="clearFileInterface()" class="cta-button bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center">
+                        Clear / Reset
+                    </button>
+                </div>
+
+                <!-- Status Display -->
+                <div id="fileSecurerStatus" class="p-4 bg-white/5 rounded-xl text-gray-300 min-h-[60px] flex items-center justify-center text-center text-sm border border-white/10">
+                    Ready. Upload a file and set a password to begin.
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Secure Text Vault Section -->
+        <section id="text-securer" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-16">
+            <h2 class="text-4xl font-bold text-center text-white mb-6">Secure Text Vault (Shareable Strings)</h2>
+            <p class="text-lg text-gray-400 text-center max-w-xl mx-auto mb-10">
+                Encrypt and decrypt messages instantly. Perfect for secure, compact, client-side messaging.
+            </p>
+
+            <!-- Applied Glass Card Style -->
+            <div class="max-w-4xl mx-auto glass-card p-8 sm:p-12 space-y-6">
+
+                <!-- Text Input/Output Area -->
+                <label for="textInput" class="flex flex-col text-gray-400">
+                    <span class="mb-1 text-sm font-medium">Plain Text or Secured String:</span>
+                    <textarea 
+                        id="textInput" 
+                        rows="6" 
+                        class="app-input resize-none" 
+                        placeholder="Paste your plain text message to encrypt, or a secured string to decrypt.">
+                    </textarea>
+                </label>
+                
+                <!-- Password Input -->
+                <label for="textPasswordInput" class="flex flex-col text-gray-400">
+                    <span class="mb-1 text-sm font-medium">Encryption Key / Decryption Password:</span>
+                    <input type="password" id="textPasswordInput" class="app-input" placeholder="Must be the exact same password for decryption.">
+                </label>
+                
+                <!-- Action Buttons (Guaranteed Centering) -->
+                <div class="grid grid-cols-3 gap-4 pt-4">
+                    <button onclick="encryptText()" class="cta-button bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30 col-span-1 flex items-center justify-center">
+                        Encrypt
+                    </button>
+                    <button onclick="decryptText()" class="cta-button bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/30 col-span-1 flex items-center justify-center">
+                        Decrypt
+                    </button>
+                    <button onclick="clearTextInterface()" class="cta-button bg-white/10 hover:bg-white/20 text-white border border-white/20 col-span-1 flex items-center justify-center">
+                        Clear
+                    </button>
+                </div>
+
+                <!-- Status/Output Display -->
+                <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                    <h3 class="text-lg font-semibold text-white mb-2">Secured Output / Result</h3>
+                    
+                    <!-- textSecurerOutput: This container handles min-height and background -->
+                    <div id="textSecurerOutput" class="text-output-box bg-gray-900/50 rounded-lg flex items-center justify-center border border-white/10">
+                        <!-- textOutputDisplay: This is the actual text content with the p-4 padding for alignment -->
+                        <p id="textOutputDisplay" class="text-gray-300 text-output-content w-full p-4">
+                            Processed output will appear here. The encrypted message will look like a long, random string.
+                        </p>
+                    </div>
+
+                    <!-- Copy button (Full-width and highly visible) -->
+                    <button id="copyButton" onclick="copyToClipboard()" class="hidden mt-4 w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition duration-150 ease-in-out transform hover:scale-[1.01]">
+                        <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"></path></svg>
+                        Copy Secured String
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 4. Secure Password Generator Section (NEW) -->
+        <section id="password-generator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-16">
+            <h2 class="text-4xl font-bold text-center text-white mb-6">High-Entropy Password Generator</h2>
+            <p class="text-lg text-gray-400 text-center max-w-xl mx-auto mb-10">
+                Generate strong, random, client-side passwords tailored to any security requirement.
+            </p>
+
+            <!-- Applied Glass Card Style -->
+            <div class="max-w-4xl mx-auto glass-card p-8 sm:p-12 space-y-6">
+                
+                <!-- Length Slider -->
+                <label for="passwordLength" class="flex flex-col text-gray-400">
+                    <span class="mb-2 text-sm font-medium flex justify-between">
+                        Password Length: <span id="lengthValue" class="text-white font-semibold">16</span>
+                    </span>
+                    <input type="range" id="passwordLength" min="12" max="24" value="16" step="1" 
+                           oninput="document.getElementById('lengthValue').textContent = this.value"
+                           class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                </label>
+
+                <!-- Character Options Checkboxes -->
+                <div class="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-white">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="includeUppercase" checked class="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500">
+                        <span class="text-sm font-medium">Uppercase (A-Z)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="includeLowercase" checked class="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500">
+                        <span class="text-sm font-medium">Lowercase (a-z)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="includeNumbers" checked class="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500">
+                        <span class="text-sm font-medium">Numbers (0-9)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="includeSymbols" class="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500">
+                        <span class="text-sm font-medium">Symbols (!@#$...)</span>
+                    </label>
+                </div>
+
+                <!-- Output Display -->
+                <div class="pt-4">
+                    <h3 class="text-lg font-semibold text-white mb-2">Generated Password</h3>
+                    <div id="passwordOutputBox" class="text-output-box bg-gray-900/50 rounded-lg flex items-center justify-center border border-white/10 p-4">
+                        <p id="passwordOutputDisplay" class="text-green-400 text-lg font-mono text-center w-full select-all">
+                            Generate a high-entropy password.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-3 gap-4 pt-4">
+                    <button onclick="generatePassword()" class="cta-button bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30 col-span-1 flex items-center justify-center">
+                        Generate
+                    </button>
+                    <button id="passwordCopyButton" onclick="copyPassword()" class="cta-button bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 col-span-1 flex items-center justify-center" disabled>
+                        <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"></path></svg>
+                        Copy
+                    </button>
+                    <button onclick="clearPasswordInterface()" class="cta-button bg-white/10 hover:bg-white/20 text-white border border-white/20 col-span-1 flex items-center justify-center">
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. About/Contact Section (Less visually dense area) -->
+        <section id="about" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center">
+            <h2 class="text-4xl font-bold text-white mb-4">Why Studio//X?</h2>
+            <p class="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
+                This platform is built on modern, secure, client-side technologies, guaranteeing performance and privacy. No data ever leaves your browser.
+            </p>
+            <a href="mailto:contact@studiox.com" id="contact" class="cta-button bg-white/10 hover:bg-white/20 text-white rounded-xl text-lg border border-white/20">
+                Contact for Custom Tools
+            </a>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/5 border-t border-white/10 mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+                <p>&copy; 2025 Studio//X. All rights reserved. <span class="text-xs text-gray-500">(Private Tool Platform)</span></p>
+                <div class="mt-4 md:mt-0 space-x-4">
+                    <a href="#" class="hover:text-blue-400 transition-colors">Privacy</a>
+                    <span class="text-gray-600">|</span>
+                    <a href="#" class="hover:text-blue-400 transition-colors">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- JavaScript for Menu, Scroll Indicator, and Security Tools -->
+    <script>
+        // --- GLOBAL STATE & UTILITIES ---
+        let currentFileMode = 'encrypt';
+        let uploadedFile = null;
+        // Cryptographic Constants
+        const SALT_LENGTH = 16;
+        const IV_LENGTH = 12; // Standard for AES-GCM
+        const ITERATIONS = 100000; // High iteration count for maximum computational resistance
+        const KEY_SIZE = 256; // Explicitly set to 256 bits for AES-256 GCM
+        const ENCODER = new TextEncoder();
+        const DECODER = new TextDecoder();
+        
+        // Character sets for password generator
+        const CHAR_SETS = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            lowercase: 'abcdefghijklmnopqrstuvwxyz',
+            numbers: '0123456789',
+            symbols: '!@#$%^&*()_+[]{}|;:,.<>?/~`'
+        };
+        const ALL_CHARS = Object.values(CHAR_SETS).join('');
+        let animationInterval = null;
+
+
+        // Base64 conversion helpers for ArrayBuffers
+        const arrayBufferToBase64 = (buffer) => btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+        const base64ToArrayBuffer = (base64) => {
+            try {
+                const binary_string = atob(base64);
+                const len = binary_string.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binary_string.charCodeAt(i);
+                }
+                return bytes.buffer;
+            } catch (e) {
+                // If atob fails (invalid base64), return null to be caught as error
+                return null;
+            }
+        };
+        
+        // --- UI UTILITIES & Setup ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu Toggle
+            document.getElementById('menu-button').addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+            // Ensure initial state is correctly set
+            switchFileMode('encrypt'); 
+            
+            // FIX FOR INITIAL ALIGNMENT ISSUE: Force JS to apply correct stable state
+            clearTextInterface();
+        });
+
+        // Key Derivation Utility (Shared by both File and Text Securers)
+        async function deriveKey(password, salt) {
+            const passwordBytes = ENCODER.encode(password);
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                passwordBytes,
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+
+            return crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: ITERATIONS,
+                    hash: 'SHA-256', // Strong hashing algorithm
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: KEY_SIZE }, // AES-256 GCM
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+
+        // Scroll Progress Bar Update
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const totalHeight = document.body.scrollHeight - window.innerHeight;
+            const scrollPosition = window.scrollY;
+
+            if (totalHeight > 0) {
+                const progress = (scrollPosition / totalHeight) * 100;
+                progressBar.style.width = `${progress}%`;
+            } else {
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        // --- 2. FILE SECURER LOGIC (unchanged) ---
+
+        // Function to display status messages for the File Securer
+        function updateFileStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('fileSecurerStatus');
+            statusDiv.innerHTML = message;
+            
+            // Apply color classes (using Tailwind's blue/red/green palette)
+            statusDiv.className = 'p-4 rounded-xl text-sm min-h-[60px] flex items-center justify-center text-center border';
+            if (type === 'error') {
+                statusDiv.classList.add('bg-red-900/50', 'text-red-300', 'border-red-700');
+            } else if (type === 'success') {
+                statusDiv.classList.add('bg-green-900/50', 'text-green-300', 'border-green-700');
+            } else if (type === 'working') {
+                statusDiv.classList.add('bg-blue-900/50', 'text-blue-300', 'border-blue-700');
+            } else { // info/default
+                statusDiv.classList.add('bg-white/5', 'text-gray-300', 'border-white/10');
+            }
+        }
+        
+        function switchFileMode(mode) {
+            currentFileMode = mode;
+            const actionButton = document.getElementById('fileActionButton');
+            const encryptTab = document.getElementById('fileEncryptTab');
+            const decryptTab = document.getElementById('fileDecryptTab');
+            const fileInputLabelText = document.getElementById('fileInputLabelText');
+            
+            // Update tabs
+            encryptTab.classList.toggle('active', mode === 'encrypt');
+            decryptTab.classList.toggle('active', mode === 'decrypt');
+            
+            // Update button text and label
+            if (mode === 'encrypt') {
+                actionButton.textContent = 'Encrypt File';
+                fileInputLabelText.textContent = 'Upload File to Encrypt (supports any file type):';
+                actionButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'shadow-red-600/30');
+                actionButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'shadow-blue-500/30');
+            } else {
+                actionButton.textContent = 'Decrypt File';
+                fileInputLabelText.textContent = 'Upload Secure File (.enc) to Decrypt:';
+                actionButton.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'shadow-blue-500/30');
+                actionButton.classList.add('bg-red-600', 'hover:bg-red-700', 'shadow-red-600/30');
+            }
+            
+            // Clear input for new mode
+            clearFileInterface(false); // Do not clear the status
+            updateFileStatus(`Switched to **${mode.toUpperCase()}** mode. Upload your file.`);
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const display = document.getElementById('fileInputDisplay');
+            
+            if (files.length > 0) {
+                uploadedFile = files[0];
+                display.innerHTML = `<svg class="w-6 h-6 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-white font-medium">${uploadedFile.name} (${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB) Loaded.</span>`;
+                updateFileStatus(`File selected: **${uploadedFile.name}**. Enter password and click ${currentFileMode === 'encrypt' ? 'Encrypt' : 'Decrypt'}.`);
+            } else {
+                uploadedFile = null;
+                display.innerHTML = `<svg class="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg><span class="text-white font-medium">Click to choose a file</span>`;
+                updateFileStatus('Ready. Upload a file and set a password to begin.');
+            }
+        }
+        
+        function clearFileInterface(clearStatus = true) {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePasswordInput').value = '';
+            uploadedFile = null;
+            
+            const display = document.getElementById('fileInputDisplay');
+            display.innerHTML = `<svg class="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg><span class="text-white font-medium">Click to choose a file</span>`;
+
+            if (clearStatus) {
+                updateFileStatus('Interface reset. Ready to process a new file.');
+            }
+        }
+
+        // Main execution function
+        function executeFileAction() {
+            if (currentFileMode === 'encrypt') {
+                encryptFile();
+            } else {
+                decryptFile();
+            }
+        }
+
+        // --- ENCRYPTION FUNCTION (FILE) ---
+        async function encryptFile() {
+            const password = document.getElementById('filePasswordInput').value;
+
+            if (!uploadedFile || !password || password.length < 12) {
+                return updateFileStatus('⚠️ **Security Error:** Please upload a file and enter a password of at least **12 characters** (high entropy required).', 'error');
+            }
+            
+            updateFileStatus('🔐 **Encrypting...** Deriving key (100k iterations) and protecting data with AES-256 GCM. Please wait.', 'working');
+            
+            try {
+                // 1. Read file into ArrayBuffer
+                const fileBuffer = await uploadedFile.arrayBuffer();
+
+                // 2. Generate cryptographically secure random Salt and IV
+                const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+                const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+                
+                // 3. Derive key from password and salt (100,000 times)
+                const key = await deriveKey(password, salt);
+                
+                // 4. Encrypt the file data
+                const encryptedContent = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    fileBuffer
+                );
+
+                // 5. Bundle Salt, IV, and Encrypted Data (and metadata) into a JSON object
+                const secureFileObject = {
+                    salt: arrayBufferToBase64(salt),
+                    iv: arrayBufferToBase64(iv),
+                    encryptedData: arrayBufferToBase64(encryptedContent),
+                    originalName: uploadedFile.name,
+                    originalType: uploadedFile.type,
+                    crypto: "AES-256-GCM-PBKDF2-SHA256" 
+                };
+                
+                const secureFileJson = JSON.stringify(secureFileObject);
+                const secureFileBlob = new Blob([secureFileJson], { type: 'application/json' });
+
+                // 6. Trigger Download
+                const encryptedFileName = uploadedFile.name + '.aes-gcm.enc';
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(secureFileBlob);
+                a.download = encryptedFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                updateFileStatus(`✅ **Encryption Complete!** Downloaded **${encryptedFileName}**. This file is protected by AES-256 and your strong password.`, 'success');
+                
+            } catch (error) {
+                console.error('File Encryption Error:', error);
+                updateFileStatus('❌ **File Encryption Failed.** An unexpected error occurred during the process.', 'error');
+            }
+        }
+
+        // --- DECRYPTION FUNCTION (FILE) ---
+        async function decryptFile() {
+            const password = document.getElementById('filePasswordInput').value;
+
+            if (!uploadedFile || !password) {
+                return updateFileStatus('⚠️ **Input Error:** Please upload the secured file and enter the correct password.', 'error');
+            }
+
+            updateFileStatus('🔓 **Decrypting...** Attempting high-strength key derivation and decryption. Please wait.', 'working');
+
+            try {
+                // 1. Read file into text and parse JSON
+                const fileText = await uploadedFile.text();
+                const secureFileObject = JSON.parse(fileText);
+                
+                // Check if all necessary parts exist
+                if (!secureFileObject.salt || !secureFileObject.iv || !secureFileObject.encryptedData) {
+                    throw new Error('Invalid Secure File format: Missing cryptographic components.');
+                }
+
+                // 2. Convert base64 components back to ArrayBuffers
+                const salt = base64ToArrayBuffer(secureFileObject.salt);
+                const iv = base64ToArrayBuffer(secureFileObject.iv);
+                const encryptedContent = base64ToArrayBuffer(secureFileObject.encryptedData);
+
+                // Check for invalid Base64 decoding
+                if (!salt || !iv || !encryptedContent) {
+                    throw new Error('Failed to decode cryptographic components from file.');
+                }
+
+                // 3. Derive key from password and salt (Must match the 100k iterations used for encryption)
+                const key = await deriveKey(password, salt);
+
+                // 4. Decrypt the content
+                const decryptedContent = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encryptedContent
+                );
+
+                // 5. Trigger Download of the original file
+                const originalName = secureFileObject.originalName || 'decrypted-file.bin';
+                const originalType = secureFileObject.originalType || 'application/octet-stream';
+                const decryptedBlob = new Blob([decryptedContent], { type: originalType });
+
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(decryptedBlob);
+                a.download = originalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                updateFileStatus(`✅ **Decryption Complete!** Downloaded **${originalName}**.`, 'success');
+
+            } catch (error) {
+                console.error('File Decryption Error:', error);
+                if (error.name === 'OperationError') {
+                    updateFileStatus('❌ **Decryption Failed.** The password was incorrect or the file integrity check failed.', 'error');
+                } else if (error.name === 'SyntaxError') {
+                    updateFileStatus('❌ **Decryption Failed.** The uploaded file is not a valid secure file (JSON format).', 'error');
+                } else {
+                    updateFileStatus('❌ **Decryption Failed.** An unexpected error occurred. Check console for details.', 'error');
+                }
+            }
+        }
+        
+        
+        // --- 3. CORE TEXT SECURER LOGIC (unchanged) ---
+
+        // Function to update the Text Securer output and status
+        function updateTextOutput(message, type = 'info', copyable = false) {
+            const outputDisplay = document.getElementById('textOutputDisplay');
+            const outputWrapper = document.getElementById('textSecurerOutput');
+            const copyButton = document.getElementById('copyButton');
+            
+            outputDisplay.textContent = message;
+            
+            outputDisplay.classList.remove('text-gray-300', 'text-red-400', 'text-green-400');
+
+            // Conditional centering logic:
+            const isProcessedOutput = type === 'success' && copyable;
+            
+            // If it's a long, processed output, left-align it for readability
+            if (isProcessedOutput) {
+                 // Text left-aligned
+                 outputDisplay.classList.remove('text-center');
+                 // Flex container adjusted to push content to the start (top-left)
+                 outputWrapper.classList.remove('justify-center', 'items-center');
+                 outputWrapper.classList.add('justify-start', 'items-start');
+            } else {
+                 // For status/error/info, keep it centered
+                 outputDisplay.classList.add('text-center');
+                 // Flex container centered for single-line/short status messages
+                 outputWrapper.classList.remove('justify-start', 'items-start');
+                 outputWrapper.classList.add('justify-center', 'items-center');
+            }
+
+
+            if (type === 'error') {
+                outputDisplay.classList.add('text-red-400');
+            } else if (type === 'success') {
+                outputDisplay.classList.add('text-green-400');
+            } else { // info/default
+                outputDisplay.classList.add('text-gray-300');
+            }
+
+            copyButton.classList.toggle('hidden', !copyable);
+        }
+
+        function clearTextInterface() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('textPasswordInput').value = '';
+            // Ensure the default status is centered, which is correctly handled by updateTextOutput
+            updateTextOutput('Processed output will appear here. The encrypted message will look like a long, random string.', 'info', false);
+        }
+
+        async function encryptText() {
+            const plainText = document.getElementById('textInput').value;
+            const password = document.getElementById('textPasswordInput').value;
+
+            if (!plainText || !password || password.length < 12) {
+                return updateTextOutput('⚠️ **Security Error:** Enter text to encrypt and a password of at least **12 characters**.', 'error', false);
+            }
+
+            updateTextOutput('🔐 **Encrypting...** Deriving key and protecting text with AES-256 GCM. Please wait.', 'info', false);
+
+            try {
+                // 1. Text to ArrayBuffer
+                const dataBuffer = ENCODER.encode(plainText);
+
+                // 2. Generate Salt and IV
+                const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+                const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+                
+                // 3. Derive key
+                const key = await deriveKey(password, salt);
+                
+                // 4. Encrypt
+                const encryptedContent = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    dataBuffer
+                );
+
+                // 5. Combine and encode to a compact string: SALT.IV.CIPHERTEXT
+                const securedString = 
+                    arrayBufferToBase64(salt) + '.' + 
+                    arrayBufferToBase64(iv) + '.' + 
+                    arrayBufferToBase64(encryptedContent);
+                
+                // The new string is treated as "copyable" output, which is left-aligned in JS
+                updateTextOutput(`✅ ENCRYPTED MESSAGE (Copy to Share):\n\n${securedString}`, 'success', true);
+                
+            } catch (error) {
+                console.error('Text Encryption Error:', error);
+                updateTextOutput('❌ **Encryption Failed.** An unexpected error occurred.', 'error', false);
+            }
+        }
+
+        async function decryptText() {
+            const securedString = document.getElementById('textInput').value;
+            const password = document.getElementById('textPasswordInput').value;
+
+            if (!securedString || !password) {
+                return updateTextOutput('⚠️ **Input Error:** Paste the full secured string and enter the correct password.', 'error', false);
+            }
+
+            updateTextOutput('🔓 **Decrypting...** Attempting key derivation and decryption. Please wait.', 'info', false);
+
+            try {
+                // 1. Split and decode the components
+                const parts = securedString.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid secured string format. Must be SALT.IV.CIPHERTEXT.');
+                }
+                
+                const salt = base64ToArrayBuffer(parts[0]);
+                const iv = base64ToArrayBuffer(parts[1]);
+                const encryptedContent = base64ToArrayBuffer(parts[2]);
+
+                 // Check for invalid Base64 decoding
+                if (!salt || !iv || !encryptedContent) {
+                    throw new Error('Invalid Base64 component found in the secured string.');
+                }
+
+                // 2. Derive key
+                const key = await deriveKey(password, salt);
+
+                // 3. Decrypt
+                const decryptedContent = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encryptedContent
+                );
+
+                // 4. ArrayBuffer to Text
+                const plainText = DECODER.decode(decryptedContent);
+
+                updateTextOutput(`✅ DECRYPTED MESSAGE:\n\n${plainText}`, 'success', false);
+
+            } catch (error) {
+                console.error('Text Decryption Error:', error);
+                if (error.name === 'OperationError') {
+                    updateTextOutput('❌ **Decryption Failed.** The password was incorrect or the message integrity check failed.', 'error', false);
+                } else {
+                    updateTextOutput('❌ **Decryption Failed.** Invalid secured string format or unexpected error.', 'error', false);
+                }
+            }
+        }
+
+        // --- CLIPBOARD UTILITY (for Text Vault) ---
+        function copyToClipboard() {
+            const output = document.getElementById('textOutputDisplay').textContent;
+            const copyButton = document.getElementById('copyButton');
+            
+            // Clean the output text by removing the heading added in JS
+            const textToCopy = output.replace('✅ ENCRYPTED MESSAGE (Copy to Share):\n\n', '').trim();
+            
+            // Use document.execCommand('copy') for better compatibility in iframe environments
+            try {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                
+                const originalText = 'Copy Secured String';
+                // Use a checkmark SVG and new label
+                copyButton.innerHTML = '<svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copied!';
+                
+                setTimeout(() => {
+                    copyButton.innerHTML = `<svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"></path></svg> ${originalText}`;
+                }, 2000);
+
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+        
+        // --- 4. PASSWORD GENERATOR LOGIC (NEW) ---
+        
+        function clearPasswordInterface() {
+            // Stop any running animation
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+            
+            document.getElementById('passwordOutputDisplay').textContent = 'Generate a high-entropy password.';
+            document.getElementById('passwordOutputDisplay').classList.remove('text-red-400');
+            document.getElementById('passwordOutputDisplay').classList.add('text-green-400');
+
+            document.getElementById('passwordLength').value = 16;
+            document.getElementById('lengthValue').textContent = 16;
+            document.getElementById('passwordCopyButton').disabled = true;
+            document.getElementById('passwordCopyButton').innerHTML = '<svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"></path></svg> Copy';
+        }
+
+        function generatePassword() {
+            // Stop previous animation if running
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            
+            const length = parseInt(document.getElementById('passwordLength').value, 10);
+            const includeUppercase = document.getElementById('includeUppercase').checked;
+            const includeLowercase = document.getElementById('includeLowercase').checked;
+            const includeNumbers = document.getElementById('includeNumbers').checked;
+            const includeSymbols = document.getElementById('includeSymbols').checked;
+
+            let characterSet = '';
+            if (includeUppercase) characterSet += CHAR_SETS.uppercase;
+            if (includeLowercase) characterSet += CHAR_SETS.lowercase;
+            if (includeNumbers) characterSet += CHAR_SETS.numbers;
+            if (includeSymbols) characterSet += CHAR_SETS.symbols;
+
+            if (characterSet.length === 0) {
+                const outputDisplay = document.getElementById('passwordOutputDisplay');
+                outputDisplay.textContent = 'Error: Select at least one character type.';
+                outputDisplay.classList.remove('text-green-400');
+                outputDisplay.classList.add('text-red-400');
+                document.getElementById('passwordCopyButton').disabled = true;
+                return;
+            }
+
+            let password = '';
+            const charArray = Array.from(characterSet);
+            
+            // 1. Ensure complexity (guarantee at least one char from each selected set)
+            const requiredChars = [];
+            if (includeUppercase) requiredChars.push(CHAR_SETS.uppercase);
+            if (includeLowercase) requiredChars.push(CHAR_SETS.lowercase);
+            if (includeNumbers) requiredChars.push(CHAR_SETS.numbers);
+            if (includeSymbols) requiredChars.push(CHAR_SETS.symbols);
+
+            for (let i = 0; i < requiredChars.length; i++) {
+                const set = requiredChars[i];
+                const randomIndex = Math.floor(Math.random() * set.length);
+                password += set[randomIndex];
+            }
+
+            // 2. Fill the rest of the password length randomly
+            for (let i = password.length; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * charArray.length);
+                password += charArray[randomIndex];
+            }
+            
+            // 3. Shuffle the result to randomize character positions
+            password = password.split('').sort(() => 0.5 - Math.random()).join('');
+
+            // Reset error styling if it was present
+            document.getElementById('passwordOutputDisplay').classList.remove('text-red-400');
+            document.getElementById('passwordOutputDisplay').classList.add('text-green-400');
+            
+            // 4. Start the cool flickering animation
+            flickerAnimation(password, length);
+        }
+
+        // Animation function: Simulates rapid character generation
+        function flickerAnimation(finalPassword, length) {
+            const outputDisplay = document.getElementById('passwordOutputDisplay');
+            const animationDuration = 800; // Total animation time (0.8 seconds)
+            const frameRate = 50; // Update every 50ms (20 frames per second)
+            let framesRemaining = animationDuration / frameRate;
+
+            document.getElementById('passwordCopyButton').disabled = true;
+
+            // Function to generate a random string of the correct length using ALL characters
+            const generateRandomString = (len) => {
+                let tempString = '';
+                for (let i = 0; i < len; i++) {
+                    // Use Math.random for cryptographically secure randomness in non-crypto contexts
+                    const randomIndex = Math.floor(Math.random() * ALL_CHARS.length);
+                    tempString += ALL_CHARS[randomIndex];
+                }
+                return tempString;
+            };
+
+            // Animation interval loop
+            animationInterval = setInterval(() => {
+                if (framesRemaining <= 0) {
+                    // Animation finished
+                    clearInterval(animationInterval);
+                    animationInterval = null;
+                    outputDisplay.textContent = finalPassword;
+                    document.getElementById('passwordCopyButton').disabled = false;
+                } else {
+                    // Flickering state
+                    outputDisplay.textContent = generateRandomString(length);
+                    framesRemaining--;
+                }
+            }, frameRate);
+        }
+
+        function copyPassword() {
+            const output = document.getElementById('passwordOutputDisplay').textContent;
+            const copyButton = document.getElementById('passwordCopyButton');
+            
+            if (!output || output.includes('Generate') || output.includes('Error')) return;
+
+            // Use document.execCommand('copy') for better compatibility
+            try {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = output;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                
+                const originalText = 'Copy';
+                copyButton.innerHTML = '<svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copied!';
+                
+                setTimeout(() => {
+                     copyButton.innerHTML = `<svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"></path></svg> ${originalText}`;
+                }, 2000);
+
+            } catch (err) {
+                console.error('Failed to copy password: ', err);
+            }
+        }
+    </script>
+</body>
+</html>
+
